@@ -1,6 +1,6 @@
 ARCHS = armv7 arm64
 TARGET=:clang
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = ShadowBoard
 ShadowBoard_FILES = Tweak.xm
