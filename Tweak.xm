@@ -6,7 +6,7 @@ BOOL hasUnlockedBefore;
 %hook SBIconView
 
 - (void)layoutSubviews {
-	if (!hasUnlockedBefore) {
+	if (!hasUnlockedBefore && !(self.layer.shadowOpacity == 0.5)) {
 		self.layer.masksToBounds = NO;
     	self.layer.cornerRadius = 2; // if you like rounded corners
     	self.layer.shadowOffset = CGSizeMake(1, 1);
@@ -26,6 +26,9 @@ BOOL hasUnlockedBefore;
     	[self addMotionEffect:group];
 
     	%orig;
+    }
+    else {
+    	NSLog(@"[ShadowBoard] Already added shadow to this icon");
     }
 }
 
