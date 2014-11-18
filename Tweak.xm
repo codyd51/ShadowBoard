@@ -17,9 +17,9 @@ static UIMotionEffectGroup *effects;
     if (self.layer.shadowOpacity != 0.5 && [[self motionEffects] indexOfObject:effects] == NSNotFound) 
     {
         self.layer.masksToBounds = NO;
-        self.layer.cornerRadius = self._iconImageView.layer.cornerRadius;
+        //self.layer.cornerRadius = self._iconImageView.layer.cornerRadius;
         self.layer.shadowOffset = CGSizeMake(1, 1);
-        self.layer.shadowRadius = 2;
+        self.layer.shadowRadius = self._iconImageView.layer.cornerRadius;// 2;
         self.layer.shadowOpacity = 0.5;
         self.layer.shouldRasterize = YES;
         self.layer.rasterizationScale = UIScreen.mainScreen.scale;
