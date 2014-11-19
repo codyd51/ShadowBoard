@@ -1,56 +1,44 @@
-BOOL hasUnlockedBefore;
+#import <UIKit/UIKit.h>
+
+@interface SBIconImageView : UIView 
+@end
 
 @interface SBIconView : UIView
+- (SBIconImageView*)_iconImageView;
 @end
+
+static UIMotionEffectGroup *effects;
 
 %hook SBIconView
 
-- (void)layoutSubviews {
-	if (!hasUnlockedBefore && !(self.layer.shadowOpacity == 0.5)) {
-		self.layer.masksToBounds = NO;
-    	self.layer.cornerRadius = 2; // if you like rounded corners
-    	self.layer.shadowOffset = CGSizeMake(1, 1);
-    	self.layer.shadowRadius = 2;
-    	self.layer.shadowOpacity = 0.5;
-    	UIInterpolatingMotionEffect *verticalMotionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"layer.shadowOffset.height" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
-    	verticalMotionEffect.minimumRelativeValue = @(20);
-    	verticalMotionEffect.maximumRelativeValue = @(-20);
-
-    	UIInterpolatingMotionEffect *horizontalMotionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"layer.shadowOffset.width" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
-    	horizontalMotionEffect.minimumRelativeValue = @(20);
-    	horizontalMotionEffect.maximumRelativeValue = @(-20);
-
-    	UIMotionEffectGroup *group = [UIMotionEffectGroup new];
-    	group.motionEffects = @[horizontalMotionEffect, verticalMotionEffect];
-
-    	[self addMotionEffect:group];
-
-    	%orig;
-    }
-    else {
-    	NSLog(@"[ShadowBoard] Already added shadow to this icon");
+- (void)layoutSubviews 
+{
+    %orig;
+    if (self.layer.shadowOpacity != 0.5 && [[self motionEffects] indexOfObject:effects] == NSNotFound) 
+    {
+        self.layer.masksToBounds = NO;
+        //self.layer.cornerRadius = self._iconImageView.layer.cornerRadius;
+        self.layer.shadowOffset = CGSizeMake(1, 1);
+        self.layer.shadowRadius = self._iconImageView.layer.cornerRadius;// 2;
+        self.layer.shadowOpacity = 0.5;
+        self.layer.shouldRasterize = YES;
+        self.layer.rasterizationScale = UIScreen.mainScreen.scale;
+        [self addMotionEffect:effects];
     }
 }
 
 %end
 
-int counter = 0;
+%ctor
+{
+    UIInterpolatingMotionEffect *verticalMotionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"layer.shadowOffset.height" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
+    verticalMotionEffect.minimumRelativeValue = @(30);
+    verticalMotionEffect.maximumRelativeValue = @(-30);
 
-%hook SpringBoard
+    UIInterpolatingMotionEffect *horizontalMotionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"layer.shadowOffset.width" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
+    horizontalMotionEffect.minimumRelativeValue = @(30);
+    horizontalMotionEffect.maximumRelativeValue = @(-30);
 
--(BOOL)attemptUnlockWithPasscode:(id)passcode {
-
-	BOOL r = %orig;
-	if (counter == 0) {
-		counter++;
-		return r;
-	}
-	else {
-		hasUnlockedBefore = YES;
-		return r;
-	}
-	return r;
-
+    effects = [UIMotionEffectGroup new];
+    effects.motionEffects = @[horizontalMotionEffect, verticalMotionEffect];
 }
-
-%end
